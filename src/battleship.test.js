@@ -1,2 +1,0 @@
-const battleship = require("./battleship");
-
