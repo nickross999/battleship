@@ -29,6 +29,7 @@ class GameBoard {
       new Ship("battleship", 4, true),
       new Ship("carrier", 5, true),
     ];
+    this.acceptingShipPlacement = true;
     this.nextShipToPlace = this.ships[4];
     this.boardMap = [
       [null, null, null, null, null, null, null, null, null, null],
@@ -64,6 +65,10 @@ class GameBoard {
     console.log(this.nextShipToPlace.isHorizontal);
   }
 
+  changeAcceptShipPlacementValue(){
+    this.acceptingShipPlacement = !this.acceptingShipPlacement;
+  }
+
   placeShip(x, y) {
     for (let i = 0; i < this.nextShipToPlace.length; i++) {
       if (this.nextShipToPlace.isHorizontal) {
@@ -74,14 +79,22 @@ class GameBoard {
         this.nextShipToPlace.isPlaced = true;
       }
     }
-    this.changeNextShipToPlace();
+    if (!this.checkIfAllShipsPlaced()) {
+      this.changeNextShipToPlace();
+    } else {
+      this.nextShipToPlace = new Ship("null", 0, true);
+    }
+  }
+
+  checkIfAllShipsPlaced() {
+    return this.ships.every((ship) => ship.isPlaced === true)
   }
 
   checkIfValidShipPlacement(x, y) {
     if (this.nextShipToPlace.isHorizontal) {
       if (
         x + this.nextShipToPlace.length > 10 ||
-        this.boardMap[y][x] !== null
+        this.checkAdjacentCellsForShips(x, y)
       ) {
         return false;
       } else {
@@ -90,13 +103,28 @@ class GameBoard {
     } else {
       if (
         y + this.nextShipToPlace.length > 10 ||
-        this.boardMap[y][x] !== null
+        this.checkAdjacentCellsForShips(x, y)
       ) {
         return false;
       } else {
         return true;
       }
     }
+  }
+
+  checkAdjacentCellsForShips(x, y) {
+    for (let i = 0; i < this.nextShipToPlace.length; i++) {
+      if (this.nextShipToPlace.isHorizontal){
+        if (this.boardMap[y][x + i] !== null) {
+          return true;
+        }
+      } else {
+        if (this.boardMap[y + i][x] !== null) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   receiveAttack(x, y) {

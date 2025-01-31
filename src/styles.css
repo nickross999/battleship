@@ -3,6 +3,11 @@
     justify-content: space-around;
 }
 
+.disabled {
+    cursor: not-allowed;
+    opacity: 0.2;
+}
+
 .row {
     display: flex;
     flex-direction: row;
