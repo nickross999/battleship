@@ -9,7 +9,14 @@
     <div id="app-container">
         <div id="player1-board"></div>
         <div id="player2-board"></div>
-        <button id="flip-ship-button">Change Ship Direction</button>
+        <div id="player-info" class="hidden">
+            <h1>What's Player 1's name?</h1>
+            <form id="player-info-form">
+                <label for="name-input"></label>
+                <input id="name-input" type="text">
+                <button id="player-submit-button" type="submit">Next ➞</button>
+            </form>
+        </div>
     </div>
 </body>
 </html>

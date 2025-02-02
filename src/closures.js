@@ -16,10 +16,6 @@ function placeShipClosureBuilder(player, x, y, playerContainer) {
           }
         }
       }
-      if (player.gameBoard.checkIfAllShipsPlaced()) {
-        playerContainer.classList.add("disabled");
-
-      }
     }
   };
 }

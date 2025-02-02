@@ -143,7 +143,8 @@ class GameBoard {
 }
 
 class Player {
-  constructor(AI = false) {
+  constructor(playerName, AI = false) {
+    this.playerName = playerName;
     this.AI = AI;
     this.gameBoard = new GameBoard();
   }
