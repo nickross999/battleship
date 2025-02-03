@@ -47,3 +47,7 @@
 .ship {
     background-color: lightgray;
 }
+
+.miss {
+    background-color: brown;
+}

@@ -30,7 +30,7 @@ class GameBoard {
       new Ship("carrier", 5, true),
     ];
     this.acceptingShipPlacement = true;
-    this.nextShipToPlace = this.ships[4];
+    this.nextShipToPlace = this.ships[0];
     this.boardMap = [
       [null, null, null, null, null, null, null, null, null, null],
       [null, null, null, null, null, null, null, null, null, null],

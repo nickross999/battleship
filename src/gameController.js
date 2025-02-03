@@ -7,6 +7,8 @@ const {
 class GameController {
   constructor() {
     this.players = [];
+    this.winnerDecided = false;
+    this.currentPlayerIndex = 0;
   }
 
   clearPlayerInfoDiv() {
@@ -23,6 +25,38 @@ class GameController {
         container.removeChild(container.firstChild);
       }
     }
+  }
+
+  showTransitionalScreen(callback, message, buttonText) {
+    //a method to display a transitional screen between turns so that the players dont see eachothers boards
+    //takes a callback for the button to execute on click, as well as a message to display to the player and the text for the button
+
+    let transitionalScreen = document.createElement("div");
+    transitionalScreen.classList.add("transition");
+    let transitionalScreenMessageBox = document.createElement("div");
+    transitionalScreenMessageBox.classList.add("transition-message-box");
+    let transitionalScreenMessage = document.createElement("h1");
+    transitionalScreenMessage.classList.add("transition-message");
+    transitionalScreenMessage.textContent = message;
+    let transitionalScreenMessageBoxButton = document.createElement("button");
+    transitionalScreenMessageBoxButton.textContent = buttonText;
+
+    transitionalScreenMessageBoxButton.addEventListener("click", () => {
+      this.removeTransitionalScreen();
+      callback();
+    });
+
+    transitionalScreenMessageBox.appendChild(transitionalScreenMessage);
+    transitionalScreenMessageBox.appendChild(
+      transitionalScreenMessageBoxButton
+    );
+    transitionalScreen.appendChild(transitionalScreenMessageBox);
+    document.querySelector("body").appendChild(transitionalScreen);
+  }
+
+  removeTransitionalScreen() {
+    let transitionalScreen = document.querySelector(".transition");
+    document.querySelector("body").removeChild(transitionalScreen);
   }
 
   getPlayer1Info() {
@@ -55,8 +89,13 @@ class GameController {
       this.players.push(new Player("Computer", true));
       this.clearPlayerInfoDiv();
       playerInfoDiv.classList.toggle("hidden");
-      this.buildBoards();
-      this.pickPlayer1Ships();
+      this.showTransitionalScreen(
+        () => {
+          this.pickPlayer1Ships();
+        },
+        "Player 1, it's time to place your ships!",
+        "Start"
+      );
     });
     playerInfoDiv.appendChild(AIButton);
   }
@@ -73,8 +112,13 @@ class GameController {
       this.players.push(new Player(e.target[0].value));
       this.clearPlayerInfoDiv();
       playerInfoDiv.classList.toggle("hidden");
-      this.buildBoards();
-      this.pickPlayer1Ships();
+      this.showTransitionalScreen(
+        () => {
+          this.pickPlayer1Ships();
+        },
+        "Player 1, it's time to place your ships!",
+        "Start"
+      );
     });
 
     const player2FormLabel = document.createElement("label");
@@ -94,36 +138,62 @@ class GameController {
     playerInfoDiv.appendChild(player2InfoForm);
   }
 
-  buildBoards() {
-    this.players.forEach((player, index) => {
-      const playerContainer = document.querySelector(
-        `#player${index + 1}-board`
-      );
-      const board = document.createElement("div");
-      board.classList.add("board");
-      playerContainer.appendChild(board);
+  buildBoard(index) {
+    const playerContainer = document.querySelector(`#player${index + 1}-board`);
+    const board = document.createElement("div");
+    board.classList.add("board");
+    playerContainer.appendChild(board);
 
-      for (let i = 0; i < 10; i++) {
-        const row = document.createElement("div");
-        row.classList.add("row");
-        board.appendChild(row);
+    for (let i = 0; i < 10; i++) {
+      const row = document.createElement("div");
+      row.classList.add("row");
+      board.appendChild(row);
 
-        for (let j = 0; j < 10; j++) {
-          const cell = document.createElement("div");
-          cell.classList.add("cell");
-          cell.classList.add("blue");
-          if (player.gameBoard.boardMap[i][j] !== null) {
-            cell.classList.add("ship");
-          }
-          row.appendChild(cell);
+      for (let j = 0; j < 10; j++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.classList.add("blue");
+        if (this.players[index].gameBoard.boardMap[i][j] !== null) {
+          cell.classList.remove("blue");
+          cell.classList.add("ship");
         }
+        row.appendChild(cell);
       }
-    });
+    }
+  }
+
+  buildEnemyBoard(index) {
+    const playerContainer = document.querySelector(`#player${index + 1}-board`);
+    const board = document.createElement("div");
+    board.classList.add("board");
+    playerContainer.appendChild(board);
+
+    for (let i = 0; i < 10; i++) {
+      const row = document.createElement("div");
+      row.classList.add("row");
+      board.appendChild(row);
+
+      for (let j = 0; j < 10; j++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.classList.add("blue");
+        if (
+          this.players[this.currentPlayerIndex === 0 ? 1 : 0].gameBoard[i][
+            j
+          ] === "miss"
+        ) {
+          cell.classList.remove("blue");
+          cell.classList.add("miss");
+        }
+        row.appendChild(cell);
+      }
+    }
   }
 
   pickPlayer1Ships() {
-    let player1Cells = document.querySelectorAll("#player1-board .cell");
-    let player1Container = document.querySelector("#player1-board");
+    this.buildBoard(0);
+    const player1Cells = document.querySelectorAll("#player1-board .cell");
+    const player1Container = document.querySelector("#player1-board");
 
     for (let i = 0; i < player1Cells.length; i++) {
       player1Cells[i].onclick = placeShipClosureBuilder(
@@ -150,19 +220,25 @@ class GameController {
         if (this.players[0].gameBoard.checkIfAllShipsPlaced()) {
           player2Container.classList.remove("disabled");
           this.clearBoards();
-          this.buildBoards();
-          this.pickPlayer2Ships();
+          this.showTransitionalScreen(
+            () => {
+              this.pickPlayer2Ships();
+            },
+            "Player 2, it's time to place your ships!",
+            "Start"
+          );
         }
       });
     }
 
-    let player2Container = document.querySelector("#player2-board");
+    const player2Container = document.querySelector("#player2-board");
     player2Container.classList.add("disabled");
   }
 
   pickPlayer2Ships() {
-    let player2Cells = document.querySelectorAll("#player2-board .cell");
-    let player2Container = document.querySelector("#player2-board");
+    this.buildBoard(1);
+    const player2Cells = document.querySelectorAll("#player2-board .cell");
+    const player2Container = document.querySelector("#player2-board");
 
     for (let i = 0; i < player2Cells.length; i++) {
       player2Cells[i].onclick = placeShipClosureBuilder(
@@ -189,17 +265,25 @@ class GameController {
         if (this.players[1].gameBoard.checkIfAllShipsPlaced()) {
           player1Container.classList.remove("disabled");
           this.clearBoards();
-          this.buildBoards();
-          this.startGame();
+          this.showTransitionalScreen(
+            () => {
+              this.takeNextTurn();
+            },
+            "Player 1, you're up first!",
+            "Start the game!"
+          );
         }
       });
     }
 
-    let player1Container = document.querySelector("#player1-board");
+    const player1Container = document.querySelector("#player1-board");
     player1Container.classList.add("disabled");
   }
 
-  startGame() {
+  takeNextTurn() {
+    this.clearBoards();
+    this.buildBoard(this.currentPlayerIndex);
+    this.buildEnemyBoard(this.currentPlayerIndex === 0 ? 1 : 0);
   }
 }
 
