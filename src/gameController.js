@@ -7,9 +7,37 @@ const {
 class GameController {
   constructor() {
     this.players = [];
-    this.winnerDecided = false;
     this.currentPlayerIndex = 0;
     this.currentEnemyPlayerIndex = 1;
+  }
+
+  buildPlayerInfoDiv() {
+    const playerInfoDiv = document.querySelector("#player-info")
+
+    const playerInfoDivQuestion = document.createElement("h1");
+    playerInfoDivQuestion.textContent = "What's Player 1's name?";
+
+    const playerInfoForm = document.createElement("form");
+    playerInfoForm.id = "player-info-form";
+
+    const playerInfoLabel = document.createElement("label");
+    playerInfoLabel.htmlFor = "name-input";
+
+    const playerInfoInput = document.createElement("input");
+    playerInfoInput.id = "name-input";
+    playerInfoInput.type = "text";
+
+    const playerInfoSubmitButton = document.createElement("button");
+    playerInfoSubmitButton.type = "submit";
+    playerInfoSubmitButton.id = "player-submit-button";
+    playerInfoSubmitButton.textContent = "Next ➞"
+
+    playerInfoForm.appendChild(playerInfoLabel);
+    playerInfoForm.appendChild(playerInfoInput);
+    playerInfoForm.appendChild(playerInfoSubmitButton);
+
+    playerInfoDiv.appendChild(playerInfoDivQuestion);
+    playerInfoDiv.appendChild(playerInfoForm);
   }
 
   clearPlayerInfoDiv() {
@@ -309,20 +337,53 @@ class GameController {
             i % 10,
             Math.floor(i / 10)
           );
-          this.currentPlayerIndex = this.currentPlayerIndex === 0 ? 1 : 0;
-          this.currentEnemyPlayerIndex =
-            this.currentEnemyPlayerIndex === 0 ? 1 : 0;
           this.clearBoards();
-          this.showTransitionalScreen(
-            () => {
-              this.takeTurn();
-            },
-            `Player ${this.currentPlayerIndex + 1}, it's your turn!`,
-            "Start"
-          );
+          if (
+            this.players[
+              this.currentEnemyPlayerIndex
+            ].gameBoard.checkIfAllShipsSunk()
+          ) {
+            this.endGame(this.currentPlayerIndex);
+          } else {
+            this.currentPlayerIndex = this.currentPlayerIndex === 0 ? 1 : 0;
+            this.currentEnemyPlayerIndex =
+              this.currentEnemyPlayerIndex === 0 ? 1 : 0;
+            this.showTransitionalScreen(
+              () => {
+                this.takeTurn();
+              },
+              `Player ${this.currentPlayerIndex + 1}, it's your turn!`,
+              "Start"
+            );
+          }
         });
       }
     }
+  }
+
+  endGame(winnerIndex) {
+    for (let i = 0; i < this.players.length; i++) {
+      this.buildBoard(i);
+    }
+     const winnerDialog = document.querySelector("#winner-dialog");
+     winnerDialog.showModal();
+
+     const winnerDialogText = document.querySelector("#winner-text");
+     winnerDialogText.textContent = `${this.players[winnerIndex].playerName} wins!`;
+
+     const showBoardButton = document.querySelector("#show-board-button");
+     showBoardButton.onclick = () => {
+      winnerDialog.close();
+     };
+
+     const playAgainButton = document.querySelector("#play-again-button");
+     playAgainButton.onclick = () => {
+      winnerDialog.close();
+      this.clearBoards();
+      this.players = [];
+      this.buildPlayerInfoDiv();
+      this.getPlayer1Info();
+     };
   }
 }
 

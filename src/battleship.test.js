@@ -16,6 +16,14 @@ test("no ships placed", () => {
 test("coordinates found in missed hits", () => {
     let gameBoard = new battleship.GameBoard();
     gameBoard.missedAttacks.push([1, 2]);
-    //expect(gameBoard.missedAttacks.length).toBe(1);
     expect(gameBoard.coordinatesAreInMissedAttacks(1, 2)).toBe(true);
+})
+
+test("all ships sunk", () => {
+    let gameBoard = new battleship.GameBoard();
+    gameBoard.ships.forEach((ship) => {
+        ship.isSunk = true;
+    })
+
+    expect(gameBoard.checkIfAllShipsSunk()).toBe(true);
 })

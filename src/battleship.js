@@ -4,18 +4,19 @@ class Ship {
     this.length = length;
     this.isHorizontal = isHorizontal;
     this.hitCount = 0;
-    this.sunk = false;
+    this.isSunk = false;
     this.isPlaced = false;
   }
 
   hit() {
     this.hitCount++;
-    if (this.isSunk()) {
-      this.sunk = true;
+    console.log(this.hitCount);
+    if (this.checkIfSunk()) {
+      this.isSunk = true;
     }
   }
 
-  isSunk() {
+  checkIfSunk() {
     return this.length === this.hitCount;
   }
 }
@@ -24,10 +25,10 @@ class GameBoard {
   constructor() {
     this.ships = [
       new Ship("destroyer", 2, true),
-      new Ship("submarine", 3, true),
-      new Ship("cruiser", 3, true),
-      new Ship("battleship", 4, true),
-      new Ship("carrier", 5, true),
+      //new Ship("submarine", 3, true),
+      //new Ship("cruiser", 3, true),
+      //new Ship("battleship", 4, true),
+      //new Ship("carrier", 5, true),
     ];
     this.acceptingShipPlacement = true;
     this.nextShipToPlace = this.ships[0];
@@ -65,7 +66,7 @@ class GameBoard {
     console.log(this.nextShipToPlace.isHorizontal);
   }
 
-  changeAcceptShipPlacementValue(){
+  changeAcceptShipPlacementValue() {
     this.acceptingShipPlacement = !this.acceptingShipPlacement;
   }
 
@@ -86,8 +87,12 @@ class GameBoard {
     }
   }
 
+  checkIfAllShipsSunk() {
+    return this.ships.every((ship) => ship.isSunk === true);
+  }
+
   checkIfAllShipsPlaced() {
-    return this.ships.every((ship) => ship.isPlaced === true)
+    return this.ships.every((ship) => ship.isPlaced === true);
   }
 
   checkIfValidShipPlacement(x, y) {
@@ -114,7 +119,7 @@ class GameBoard {
 
   checkAdjacentCellsForShips(x, y) {
     for (let i = 0; i < this.nextShipToPlace.length; i++) {
-      if (this.nextShipToPlace.isHorizontal){
+      if (this.nextShipToPlace.isHorizontal) {
         if (this.boardMap[y][x + i] !== null) {
           return true;
         }
@@ -132,6 +137,7 @@ class GameBoard {
       this.recordMissedAttack(x, y);
       return false;
     } else {
+      this.boardMap[y][x].hit();
       this.recordHit(x, y);
       return true;
     }
