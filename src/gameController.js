@@ -9,6 +9,7 @@ class GameController {
     this.players = [];
     this.winnerDecided = false;
     this.currentPlayerIndex = 0;
+    this.currentEnemyPlayerIndex = 1;
   }
 
   clearPlayerInfoDiv() {
@@ -178,12 +179,19 @@ class GameController {
         cell.classList.add("cell");
         cell.classList.add("blue");
         if (
-          this.players[this.currentPlayerIndex === 0 ? 1 : 0].gameBoard[i][
-            j
-          ] === "miss"
+          this.players[
+            this.currentEnemyPlayerIndex
+          ].gameBoard.coordinatesAreInMissedAttacks(j, i)
         ) {
           cell.classList.remove("blue");
           cell.classList.add("miss");
+        } else if (
+          this.players[
+            this.currentEnemyPlayerIndex
+          ].gameBoard.coordinatesAreInHits(j, i)
+        ) {
+          cell.classList.remove("blue");
+          cell.classList.add("hit");
         }
         row.appendChild(cell);
       }
@@ -267,7 +275,7 @@ class GameController {
           this.clearBoards();
           this.showTransitionalScreen(
             () => {
-              this.takeNextTurn();
+              this.takeTurn();
             },
             "Player 1, you're up first!",
             "Start the game!"
@@ -280,10 +288,41 @@ class GameController {
     player1Container.classList.add("disabled");
   }
 
-  takeNextTurn() {
+  takeTurn() {
     this.clearBoards();
     this.buildBoard(this.currentPlayerIndex);
-    this.buildEnemyBoard(this.currentPlayerIndex === 0 ? 1 : 0);
+    this.buildEnemyBoard(this.currentEnemyPlayerIndex);
+    const enemyCells = document.querySelectorAll(
+      `#player${this.currentEnemyPlayerIndex + 1}-board .cell`
+    );
+    for (let i = 0; i < enemyCells.length; i++) {
+      if (
+        !this.players[
+          this.currentEnemyPlayerIndex
+        ].gameBoard.coordinatesAreInMissedAttacks(i % 10, Math.floor(i / 10)) &&
+        !this.players[
+          this.currentEnemyPlayerIndex
+        ].gameBoard.coordinatesAreInHits(i % 10, Math.floor(i / 10))
+      ) {
+        enemyCells[i].addEventListener("click", () => {
+          this.players[this.currentEnemyPlayerIndex].gameBoard.receiveAttack(
+            i % 10,
+            Math.floor(i / 10)
+          );
+          this.currentPlayerIndex = this.currentPlayerIndex === 0 ? 1 : 0;
+          this.currentEnemyPlayerIndex =
+            this.currentEnemyPlayerIndex === 0 ? 1 : 0;
+          this.clearBoards();
+          this.showTransitionalScreen(
+            () => {
+              this.takeTurn();
+            },
+            `Player ${this.currentPlayerIndex + 1}, it's your turn!`,
+            "Start"
+          );
+        });
+      }
+    }
   }
 }
 

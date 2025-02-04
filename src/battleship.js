@@ -137,8 +137,30 @@ class GameBoard {
     }
   }
 
+  recordHit(x, y) {
+    this.hits.push([x, y]);
+  }
+
   recordMissedAttack(x, y) {
     this.missedAttacks.push([x, y]);
+  }
+
+  coordinatesAreInHits(x, y) {
+    for (let i = 0; i < this.hits.length; i++) {
+      if (this.hits[i][0] === x && this.hits[i][1] === y) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  coordinatesAreInMissedAttacks(x, y) {
+    for (let i = 0; i < this.missedAttacks.length; i++) {
+      if (this.missedAttacks[i][0] === x && this.missedAttacks[i][1] === y) {
+        return true;
+      }
+    }
+    return false;
   }
 }
 

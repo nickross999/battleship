@@ -51,3 +51,7 @@
 .miss {
     background-color: brown;
 }
+
+.hit {
+    background-color: blueviolet;
+}
