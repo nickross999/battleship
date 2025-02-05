@@ -7,21 +7,19 @@
 </head>
 <body>
     <div id="app-container">
+        <div id="starting-screen">
+            <h1>Battleship</h1>
+            <button id="start">Start</button>
+        </div>
         <div id="player1-board"></div>
         <div id="player2-board"></div>
-        <div id="player-info" class="hidden">
-            <h1>What's Player 1's name?</h1>
-            <form id="player-info-form">
-                <label for="name-input"></label>
-                <input id="name-input" type="text">
-                <button id="player-submit-button" type="submit">Next ➞</button>
-            </form>
-        </div>
+        <div id="player-info" class="hidden"></div>
+        <button class="hidden" id="show-dialog-button">Show Game End Screen</button>
     </div>
     <dialog id="winner-dialog">
         <h1 id="winner-text"></h1>
         <button id="play-again-button">Play again</button>
-        <button id="show-board-button">Show board</button>
+        <button id="show-board-button">Show boards</button>
     </dialog>
 </body>
 </html>

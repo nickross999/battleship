@@ -12,7 +12,7 @@ class GameController {
   }
 
   buildPlayerInfoDiv() {
-    const playerInfoDiv = document.querySelector("#player-info")
+    const playerInfoDiv = document.querySelector("#player-info");
 
     const playerInfoDivQuestion = document.createElement("h1");
     playerInfoDivQuestion.textContent = "What's Player 1's name?";
@@ -30,7 +30,7 @@ class GameController {
     const playerInfoSubmitButton = document.createElement("button");
     playerInfoSubmitButton.type = "submit";
     playerInfoSubmitButton.id = "player-submit-button";
-    playerInfoSubmitButton.textContent = "Next ➞"
+    playerInfoSubmitButton.textContent = "Next ➞";
 
     playerInfoForm.appendChild(playerInfoLabel);
     playerInfoForm.appendChild(playerInfoInput);
@@ -86,6 +86,10 @@ class GameController {
   removeTransitionalScreen() {
     let transitionalScreen = document.querySelector(".transition");
     document.querySelector("body").removeChild(transitionalScreen);
+  }
+
+  pickRandomPlayerIndex() {
+    return Math.floor(Math.random() * 2)
   }
 
   getPlayer1Info() {
@@ -301,11 +305,13 @@ class GameController {
         if (this.players[1].gameBoard.checkIfAllShipsPlaced()) {
           player1Container.classList.remove("disabled");
           this.clearBoards();
+          this.currentPlayerIndex = this.pickRandomPlayerIndex();
+          this.currentEnemyPlayerIndex = this.currentPlayerIndex === 0 ? 1 : 0;
           this.showTransitionalScreen(
             () => {
               this.takeTurn();
             },
-            "Player 1, you're up first!",
+            `Player ${this.currentPlayerIndex + 1}, you're up first!`,
             "Start the game!"
           );
         }
@@ -365,25 +371,38 @@ class GameController {
     for (let i = 0; i < this.players.length; i++) {
       this.buildBoard(i);
     }
-     const winnerDialog = document.querySelector("#winner-dialog");
-     winnerDialog.showModal();
+    const winnerDialog = document.querySelector("#winner-dialog");
+    winnerDialog.showModal();
+    const showWinnerDialogButton = document.querySelector(
+      "#show-dialog-button"
+    );
+    showWinnerDialogButton.classList.toggle("hidden");
 
-     const winnerDialogText = document.querySelector("#winner-text");
-     winnerDialogText.textContent = `${this.players[winnerIndex].playerName} wins!`;
+    showWinnerDialogButton.onclick = () => {
+      winnerDialog.showModal();
+    };
 
-     const showBoardButton = document.querySelector("#show-board-button");
-     showBoardButton.onclick = () => {
+    document
+      .querySelector("#app-container")
+      .appendChild(showWinnerDialogButton);
+
+    const winnerDialogText = document.querySelector("#winner-text");
+    winnerDialogText.textContent = `${this.players[winnerIndex].playerName} wins!`;
+
+    const showBoardButton = document.querySelector("#show-board-button");
+    showBoardButton.onclick = () => {
       winnerDialog.close();
-     };
+    };
 
-     const playAgainButton = document.querySelector("#play-again-button");
-     playAgainButton.onclick = () => {
+    const playAgainButton = document.querySelector("#play-again-button");
+    playAgainButton.onclick = () => {
       winnerDialog.close();
+      showWinnerDialogButton.classList.toggle("hidden");
       this.clearBoards();
       this.players = [];
       this.buildPlayerInfoDiv();
       this.getPlayer1Info();
-     };
+    };
   }
 }
 
