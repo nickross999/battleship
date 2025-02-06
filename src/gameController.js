@@ -47,6 +47,75 @@ class GameController {
     }
   }
 
+  buildBoard(index) {
+    const playerContainer = document.querySelector(`#player${index + 1}-board`);
+    const board = document.createElement("div");
+    board.classList.add("board");
+    playerContainer.appendChild(board);
+
+    for (let i = 0; i < 10; i++) {
+      const row = document.createElement("div");
+      row.classList.add("row");
+      board.appendChild(row);
+
+      for (let j = 0; j < 10; j++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.classList.add("blue");
+        if (this.players[index].gameBoard.boardMap[i][j] !== null) {
+          cell.classList.remove("blue");
+          cell.classList.add("ship");
+        }
+        row.appendChild(cell);
+      }
+    }
+
+    const playerNameDisplay = document.createElement("h1");
+    playerNameDisplay.textContent = this.players[index].playerName;
+    playerNameDisplay.classList.add("player-name");
+    playerContainer.appendChild(playerNameDisplay);
+  }
+
+  buildEnemyBoard(index) {
+    const playerContainer = document.querySelector(`#player${index + 1}-board`);
+    const board = document.createElement("div");
+    board.classList.add("board");
+    playerContainer.appendChild(board);
+
+    for (let i = 0; i < 10; i++) {
+      const row = document.createElement("div");
+      row.classList.add("row");
+      board.appendChild(row);
+
+      for (let j = 0; j < 10; j++) {
+        const cell = document.createElement("div");
+        cell.classList.add("cell");
+        cell.classList.add("blue");
+        if (
+          this.players[
+            this.currentEnemyPlayerIndex
+          ].gameBoard.coordinatesAreInMissedAttacks(j, i)
+        ) {
+          cell.classList.remove("blue");
+          cell.classList.add("miss");
+        } else if (
+          this.players[
+            this.currentEnemyPlayerIndex
+          ].gameBoard.coordinatesAreInHits(j, i)
+        ) {
+          cell.classList.remove("blue");
+          cell.classList.add("hit");
+        }
+        row.appendChild(cell);
+      }
+    }
+
+    const playerNameDisplay = document.createElement("h1");
+    playerNameDisplay.textContent = this.players[index].playerName;
+    playerNameDisplay.classList.add("player-name");
+    playerContainer.appendChild(playerNameDisplay);
+  }
+
   clearBoards() {
     for (let i = 0; i < 2; i++) {
       let container = document.querySelector(`#player${i + 1}-board`);
@@ -126,7 +195,7 @@ class GameController {
         () => {
           this.pickPlayer1Ships();
         },
-        "Player 1, it's time to place your ships!",
+        `${this.players[0].playerName}, it's time to place your ships!`,
         "Start"
       );
     });
@@ -149,7 +218,7 @@ class GameController {
         () => {
           this.pickPlayer1Ships();
         },
-        "Player 1, it's time to place your ships!",
+        `${this.players[0].playerName}, it's time to place your ships!`,
         "Start"
       );
     });
@@ -169,65 +238,6 @@ class GameController {
     player2InfoForm.appendChild(player2FormInput);
     player2InfoForm.appendChild(player2FormSubmitButton);
     playerInfoDiv.appendChild(player2InfoForm);
-  }
-
-  buildBoard(index) {
-    const playerContainer = document.querySelector(`#player${index + 1}-board`);
-    const board = document.createElement("div");
-    board.classList.add("board");
-    playerContainer.appendChild(board);
-
-    for (let i = 0; i < 10; i++) {
-      const row = document.createElement("div");
-      row.classList.add("row");
-      board.appendChild(row);
-
-      for (let j = 0; j < 10; j++) {
-        const cell = document.createElement("div");
-        cell.classList.add("cell");
-        cell.classList.add("blue");
-        if (this.players[index].gameBoard.boardMap[i][j] !== null) {
-          cell.classList.remove("blue");
-          cell.classList.add("ship");
-        }
-        row.appendChild(cell);
-      }
-    }
-  }
-
-  buildEnemyBoard(index) {
-    const playerContainer = document.querySelector(`#player${index + 1}-board`);
-    const board = document.createElement("div");
-    board.classList.add("board");
-    playerContainer.appendChild(board);
-
-    for (let i = 0; i < 10; i++) {
-      const row = document.createElement("div");
-      row.classList.add("row");
-      board.appendChild(row);
-
-      for (let j = 0; j < 10; j++) {
-        const cell = document.createElement("div");
-        cell.classList.add("cell");
-        cell.classList.add("blue");
-        if (
-          this.players[
-            this.currentEnemyPlayerIndex
-          ].gameBoard.coordinatesAreInMissedAttacks(j, i)
-        ) {
-          cell.classList.remove("blue");
-          cell.classList.add("miss");
-        } else if (
-          this.players[
-            this.currentEnemyPlayerIndex
-          ].gameBoard.coordinatesAreInHits(j, i)
-        ) {
-          cell.classList.remove("blue");
-          cell.classList.add("hit");
-        }
-        row.appendChild(cell);
-      }
-    }
   }
 
   pickPlayer1Ships() {
@@ -258,21 +268,24 @@ class GameController {
       });
       player1Cells[i].addEventListener("click", () => {
         if (this.players[0].gameBoard.checkIfAllShipsPlaced()) {
-          player2Container.classList.remove("disabled");
           this.clearBoards();
           this.showTransitionalScreen(
             () => {
               this.pickPlayer2Ships();
             },
-            "Player 2, it's time to place your ships!",
+            `${this.players[1].playerName}, it's time to place your ships!`,
             "Start"
           );
         }
       });
     }
 
-    const player2Container = document.querySelector("#player2-board");
-    player2Container.classList.add("disabled");
+    const changeShipOrientationButton = document.createElement("button");
+    changeShipOrientationButton.textContent = "Change ship direction";
+    changeShipOrientationButton.onclick = () => {
+      this.players[0].gameBoard.changeNextShipDirection();
+    };
+    player1Container.appendChild(changeShipOrientationButton);
   }
 
   pickPlayer2Ships() {
@@ -303,7 +316,6 @@ class GameController {
       });
       player2Cells[i].addEventListener("click", () => {
         if (this.players[1].gameBoard.checkIfAllShipsPlaced()) {
-          player1Container.classList.remove("disabled");
           this.clearBoards();
           this.currentPlayerIndex = this.pickRandomPlayerIndex();
           this.currentEnemyPlayerIndex = this.currentPlayerIndex === 0 ? 1 : 0;
@@ -311,15 +323,19 @@ class GameController {
             () => {
               this.takeTurn();
             },
-            `Player ${this.currentPlayerIndex + 1}, you're up first!`,
+            `${this.players[this.currentPlayerIndex].playerName}, you're up first!`,
             "Start the game!"
           );
         }
       });
     }
 
-    const player1Container = document.querySelector("#player1-board");
-    player1Container.classList.add("disabled");
+    const changeShipOrientationButton = document.createElement("button");
+    changeShipOrientationButton.textContent = "Change ship direction";
+    changeShipOrientationButton.onclick = () => {
+      this.players[1].gameBoard.changeNextShipDirection();
+    };
+    player2Container.appendChild(changeShipOrientationButton);
   }
 
   takeTurn() {
@@ -358,7 +374,7 @@ class GameController {
               () => {
                 this.takeTurn();
               },
-              `Player ${this.currentPlayerIndex + 1}, it's your turn!`,
+              `${this.players[this.currentPlayerIndex].playerName}, it's your turn!`,
               "Start"
             );
           }

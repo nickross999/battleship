@@ -24,11 +24,11 @@ class Ship {
 class GameBoard {
   constructor() {
     this.ships = [
-      new Ship("destroyer", 2, true),
-      //new Ship("submarine", 3, true),
-      //new Ship("cruiser", 3, true),
-      //new Ship("battleship", 4, true),
-      //new Ship("carrier", 5, true),
+      new Ship("Destroyer", 2, true),
+      new Ship("Submarine", 3, true),
+      new Ship("Cruiser", 3, true),
+      new Ship("Battleship", 4, true),
+      new Ship("Carrier", 5, true),
     ];
     this.acceptingShipPlacement = true;
     this.nextShipToPlace = this.ships[0];
