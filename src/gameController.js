@@ -70,10 +70,31 @@ class GameController {
       }
     }
 
+    this.buildPlayerNameDisplay(index, playerContainer);
+    this.buildScoreBoard(index, playerContainer);
+  }
+
+  buildPlayerNameDisplay(index, container) {
     const playerNameDisplay = document.createElement("h1");
     playerNameDisplay.textContent = this.players[index].playerName;
     playerNameDisplay.classList.add("player-name");
-    playerContainer.appendChild(playerNameDisplay);
+    container.appendChild(playerNameDisplay);
+  }
+
+  buildScoreBoard(index, container) {
+    const playerScoreBoard = document.createElement("div");
+    this.players[index].gameBoard.ships.forEach((ship) => {
+      const shipDiv = document.createElement("div");
+      shipDiv.id = ship.name.toLowerCase();
+      if(ship.checkIfSunk()) {
+        shipDiv.classList.add("sunk");
+      }
+      const shipName = document.createElement("h2");
+      shipName.textContent = ship.name;
+      shipDiv.appendChild(shipName);
+      playerScoreBoard.appendChild(shipDiv);
+    })
+    container.appendChild(playerScoreBoard);
   }
 
   buildEnemyBoard(index) {
@@ -110,10 +131,8 @@ class GameController {
       }
     }
 
-    const playerNameDisplay = document.createElement("h1");
-    playerNameDisplay.textContent = this.players[index].playerName;
-    playerNameDisplay.classList.add("player-name");
-    playerContainer.appendChild(playerNameDisplay);
+    this.buildPlayerNameDisplay(index, playerContainer);
+    this.buildScoreBoard(index, playerContainer);
   }
 
   clearBoards() {

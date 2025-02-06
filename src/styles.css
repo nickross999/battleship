@@ -11,6 +11,12 @@
     top: 10%;
 }
 
+.board {
+    border: 1px black solid;
+    border-radius: 10px;
+    background-color: rgb(212, 225, 230);
+}
+
 .hidden {
     display: none;
 }
@@ -28,7 +34,8 @@
 .cell {
     width: 50px;
     height: 50px;
-    border: 1px solid black;
+    border: 1px dashed black;
+    border-radius: 10px;
 }
 
 .blue {
@@ -54,4 +61,8 @@
 
 .hit {
     background-color: blueviolet;
+}
+
+.sunk {
+    text-decoration: line-through;
 }

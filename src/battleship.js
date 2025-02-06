@@ -176,6 +176,10 @@ class Player {
     this.AI = AI;
     this.gameBoard = new GameBoard();
   }
+
+  isAI() {
+    return this.AI;
+  }
 }
 
 module.exports = { Player, GameBoard, Ship };
