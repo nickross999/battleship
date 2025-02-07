@@ -19,6 +19,10 @@ class Ship {
   checkIfSunk() {
     return this.length === this.hitCount;
   }
+
+  randomizeIsHorizontal() {
+    this.isHorizontal = Math.floor(Math.random() * 2) > 0 ? true : false;
+  }
 }
 
 class GameBoard {
@@ -46,6 +50,7 @@ class GameBoard {
     ];
     this.hits = [];
     this.missedAttacks = [];
+    this.previousShot = null;
   }
 
   changeNextShipToPlace(nextShipID = null) {
@@ -145,10 +150,18 @@ class GameBoard {
 
   recordHit(x, y) {
     this.hits.push([x, y]);
+    this.previousShot = {
+      coordinates: [x, y],
+      hit: true,
+    }
   }
 
   recordMissedAttack(x, y) {
     this.missedAttacks.push([x, y]);
+    this.previousShot = {
+      coordinates: [x, y],
+      hit: false,
+    }
   }
 
   coordinatesAreInHits(x, y) {
@@ -171,7 +184,7 @@ class GameBoard {
 }
 
 class Player {
-  constructor(playerName, AI = false) {
+  constructor(playerName = "Computer", AI = false) {
     this.playerName = playerName;
     this.AI = AI;
     this.gameBoard = new GameBoard();

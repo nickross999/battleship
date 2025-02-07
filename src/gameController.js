@@ -1,16 +1,82 @@
 const { Player } = require("./battleship");
-const {
-  placeShipClosureBuilder,
-  showValidShipPlacementClosureBuilder,
-} = require("./closures");
 
 class GameController {
   constructor() {
     this.players = [];
-    this.currentPlayerIndex = 0;
-    this.currentEnemyPlayerIndex = 1;
+    this.currentPlayerIndex = this.pickRandomPlayerIndex();
+    this.currentEnemyPlayerIndex = this.currentPlayerIndex === 0 ? 1 : 0;
   }
 
+  //closures
+  placeShipClosureBuilder(player, x, y, playerContainer) {
+    return function () {
+      if (!player.gameBoard.acceptingShipPlacement) {
+        return;
+      }
+      if (player.gameBoard.checkIfValidShipPlacement(x, y)) {
+        player.gameBoard.placeShip(x, y);
+        let rowArray = Array.from(playerContainer.firstChild.childNodes);
+        for (let i = 0; i < 10; i++) {
+          for (let j = 0; j < 10; j++) {
+            if (
+              typeof player.gameBoard.boardMap[i][j] === "object" &&
+              player.gameBoard.boardMap[i][j] !== null
+            ) {
+              rowArray[i].childNodes[j].classList.add("ship");
+            }
+          }
+        }
+      }
+    };
+  }
+
+  showValidShipPlacementClosureBuilder(player, x, y, playerContainer) {
+    return function () {
+      if (!player.gameBoard.acceptingShipPlacement) {
+        return;
+      }
+      let rowArray = Array.from(playerContainer.firstChild.childNodes);
+      if (player.gameBoard.checkIfValidShipPlacement(x, y)) {
+        if (player.gameBoard.nextShipToPlace.isHorizontal) {
+          for (
+            let i = x;
+            i < 10 && i < x + player.gameBoard.nextShipToPlace.length;
+            i++
+          ) {
+            rowArray[y].childNodes[i].classList.add("green");
+          }
+        } else {
+          for (
+            let i = y;
+            i < 10 && i < y + player.gameBoard.nextShipToPlace.length;
+            i++
+          ) {
+            rowArray[i].childNodes[x].classList.add("green");
+          }
+        }
+      } else {
+        if (player.gameBoard.nextShipToPlace.isHorizontal) {
+          for (
+            let i = x;
+            i < 10 && i < x + player.gameBoard.nextShipToPlace.length;
+            i++
+          ) {
+            rowArray[y].childNodes[i].classList.add("red");
+          }
+        } else {
+          for (
+            let i = y;
+            i < 10 && i < y + player.gameBoard.nextShipToPlace.length;
+            i++
+          ) {
+            rowArray[i].childNodes[x].classList.add("red");
+          }
+        }
+      }
+    };
+  }
+
+  //DOM editors
   buildPlayerInfoDiv() {
     const playerInfoDiv = document.querySelector("#player-info");
 
@@ -86,14 +152,14 @@ class GameController {
     this.players[index].gameBoard.ships.forEach((ship) => {
       const shipDiv = document.createElement("div");
       shipDiv.id = ship.name.toLowerCase();
-      if(ship.checkIfSunk()) {
+      if (ship.checkIfSunk()) {
         shipDiv.classList.add("sunk");
       }
       const shipName = document.createElement("h2");
       shipName.textContent = ship.name;
       shipDiv.appendChild(shipName);
       playerScoreBoard.appendChild(shipDiv);
-    })
+    });
     container.appendChild(playerScoreBoard);
   }
 
@@ -176,8 +242,9 @@ class GameController {
     document.querySelector("body").removeChild(transitionalScreen);
   }
 
+  //game logic
   pickRandomPlayerIndex() {
-    return Math.floor(Math.random() * 2)
+    return Math.floor(Math.random() * 2);
   }
 
   getPlayer1Info() {
@@ -265,13 +332,13 @@ class GameController {
     const player1Container = document.querySelector("#player1-board");
 
     for (let i = 0; i < player1Cells.length; i++) {
-      player1Cells[i].onclick = placeShipClosureBuilder(
+      player1Cells[i].onclick = this.placeShipClosureBuilder(
         this.players[0],
         i % 10,
         Math.floor(i / 10),
         player1Container
       );
-      player1Cells[i].onmouseenter = showValidShipPlacementClosureBuilder(
+      player1Cells[i].onmouseenter = this.showValidShipPlacementClosureBuilder(
         this.players[0],
         i % 10,
         Math.floor(i / 10),
@@ -290,9 +357,20 @@ class GameController {
           this.clearBoards();
           this.showTransitionalScreen(
             () => {
-              this.pickPlayer2Ships();
+              if (this.players[1].isAI()) {
+                this.placeAIShips();
+                this.players[this.currentPlayerIndex].isAI()
+                  ? this.takeAITurn()
+                  : this.takeTurn();
+              } else {
+                this.pickPlayer2Ships();
+              }
             },
-            `${this.players[1].playerName}, it's time to place your ships!`,
+            this.players[1].isAI()
+              ? `Let's start! ${
+                  this.players[this.currentPlayerIndex].playerName
+                } goes first!`
+              : `${this.players[1].playerName}, it's time to place your ships!`,
             "Start"
           );
         }
@@ -307,19 +385,38 @@ class GameController {
     player1Container.appendChild(changeShipOrientationButton);
   }
 
+  placeAIShips() {
+    while (!this.players[1].gameBoard.checkIfAllShipsPlaced()) {
+      let randomPosition = Math.floor(Math.random() * 100);
+      this.players[1].gameBoard.nextShipToPlace.randomizeIsHorizontal();
+      while (
+        !this.players[1].gameBoard.checkIfValidShipPlacement(
+          randomPosition % 10,
+          Math.floor(randomPosition / 10)
+        )
+      ) {
+        randomPosition = Math.floor(Math.random() * 100);
+      }
+      this.players[1].gameBoard.placeShip(
+        randomPosition % 10,
+        Math.floor(randomPosition / 10)
+      );
+    }
+  }
+
   pickPlayer2Ships() {
     this.buildBoard(1);
     const player2Cells = document.querySelectorAll("#player2-board .cell");
     const player2Container = document.querySelector("#player2-board");
 
     for (let i = 0; i < player2Cells.length; i++) {
-      player2Cells[i].onclick = placeShipClosureBuilder(
+      player2Cells[i].onclick = this.placeShipClosureBuilder(
         this.players[1],
         i % 10,
         Math.floor(i / 10),
         player2Container
       );
-      player2Cells[i].onmouseenter = showValidShipPlacementClosureBuilder(
+      player2Cells[i].onmouseenter = this.showValidShipPlacementClosureBuilder(
         this.players[1],
         i % 10,
         Math.floor(i / 10),
@@ -336,13 +433,13 @@ class GameController {
       player2Cells[i].addEventListener("click", () => {
         if (this.players[1].gameBoard.checkIfAllShipsPlaced()) {
           this.clearBoards();
-          this.currentPlayerIndex = this.pickRandomPlayerIndex();
-          this.currentEnemyPlayerIndex = this.currentPlayerIndex === 0 ? 1 : 0;
           this.showTransitionalScreen(
             () => {
               this.takeTurn();
             },
-            `${this.players[this.currentPlayerIndex].playerName}, you're up first!`,
+            `${
+              this.players[this.currentPlayerIndex].playerName
+            }, you're up first!`,
             "Start the game!"
           );
         }
@@ -391,14 +488,43 @@ class GameController {
               this.currentEnemyPlayerIndex === 0 ? 1 : 0;
             this.showTransitionalScreen(
               () => {
-                this.takeTurn();
+                if (this.players[this.currentPlayerIndex].isAI()) {
+                  this.takeAITurn();
+                } else {
+                  this.takeTurn();
+                }
               },
-              `${this.players[this.currentPlayerIndex].playerName}, it's your turn!`,
+              `${
+                this.players[this.currentPlayerIndex].playerName
+              }, it's your turn!`,
               "Start"
             );
           }
         });
       }
+    }
+  }
+
+  takeAITurn() {
+    if (
+      this.players[this.currentPlayerIndex].gameBoard.previousShot === null ||
+      this.players[this.currentPlayerIndex].gameBoard.previousShot.hit === false
+    ) {
+      let randomCoordinate = Math.floor(Math.random() * 100);
+      while (
+        this.players[this.currentEnemyPlayerIndex].gameBoard.boardMap[
+          Math.floor(randomCoordinate / 10)
+        ][randomCoordinate % 10] !== null
+      ) {
+        randomCoordinate = Math.floor(Math.random() * 100);
+      }
+      this.players[this.currentEnemyPlayerIndex].gameBoard.receiveAttack(
+        randomCoordinate % 10,
+        Math.floor(randomCoordinate / 10)
+      );
+      this.currentPlayerIndex = this.currentPlayerIndex === 0 ? 1 : 0;
+      this.currentEnemyPlayerIndex = this.currentEnemyPlayerIndex === 0 ? 1 : 0;
+      this.takeTurn();
     }
   }
 
