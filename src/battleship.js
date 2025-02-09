@@ -1,3 +1,5 @@
+const { LinkedList } = require("./linkedList");
+
 class Ship {
   constructor(name, length, isHorizontal) {
     this.name = name;
@@ -10,7 +12,6 @@ class Ship {
 
   hit() {
     this.hitCount++;
-    console.log(this.hitCount);
     if (this.checkIfSunk()) {
       this.isSunk = true;
     }
@@ -50,7 +51,7 @@ class GameBoard {
     ];
     this.hits = [];
     this.missedAttacks = [];
-    this.previousShot = null;
+    this.shotHistory = new LinkedList();
   }
 
   changeNextShipToPlace(nextShipID = null) {
@@ -68,7 +69,6 @@ class GameBoard {
 
   changeNextShipDirection() {
     this.nextShipToPlace.isHorizontal = !this.nextShipToPlace.isHorizontal;
-    console.log(this.nextShipToPlace.isHorizontal);
   }
 
   changeAcceptShipPlacementValue() {
@@ -102,23 +102,15 @@ class GameBoard {
 
   checkIfValidShipPlacement(x, y) {
     if (this.nextShipToPlace.isHorizontal) {
-      if (
+      return !(
         x + this.nextShipToPlace.length > 10 ||
         this.checkAdjacentCellsForShips(x, y)
-      ) {
-        return false;
-      } else {
-        return true;
-      }
+      );
     } else {
-      if (
+      return !(
         y + this.nextShipToPlace.length > 10 ||
         this.checkAdjacentCellsForShips(x, y)
-      ) {
-        return false;
-      } else {
-        return true;
-      }
+      );
     }
   }
 
@@ -150,18 +142,14 @@ class GameBoard {
 
   recordHit(x, y) {
     this.hits.push([x, y]);
-    this.previousShot = {
-      coordinates: [x, y],
-      hit: true,
-    }
   }
 
   recordMissedAttack(x, y) {
     this.missedAttacks.push([x, y]);
-    this.previousShot = {
-      coordinates: [x, y],
-      hit: false,
-    }
+  }
+
+  recordShotInHistory(x, y, hitBool) {
+    this.shotHistory.addNode([x, y], hitBool);
   }
 
   coordinatesAreInHits(x, y) {
@@ -181,6 +169,11 @@ class GameBoard {
     }
     return false;
   }
+
+  getRandomCoordinates() {
+    let randomCoordinate = Math.floor(Math.random() * 100);
+    return [randomCoordinate % 10, Math.floor(randomCoordinate / 10)];
+  }
 }
 
 class Player {
@@ -192,6 +185,52 @@ class Player {
 
   isAI() {
     return this.AI;
+  }
+
+  getAITurnDecision() {
+    const previousMove = this.gameBoard.shotHistory.getTail();
+    if (!this.gameBoard.shotHistory.getRoot() || !previousMove.hitBool) {
+      let randomCoordinate = this.gameBoard.getRandomCoordinates();
+      while (
+        this.gameBoard.shotHistory.searchForCoordinates(
+          randomCoordinate[0],
+          randomCoordinate[1]
+        )
+      ) {
+        randomCoordinate = this.gameBoard.getRandomCoordinates();
+      }
+      return randomCoordinate;
+    } else {
+      const possibleMoves = [
+        [previousMove.coordinate[0] + 1, previousMove.coordinate[1]],
+        [previousMove.coordinate[0] - 1, previousMove.coordinate[1]],
+        [previousMove.coordinate[0], previousMove.coordinate[1] + 1],
+        [previousMove.coordinate[0], previousMove.coordinate[1] - 1],
+      ];
+
+      const filteredMoves = possibleMoves.filter(
+        (move) =>
+          move[0] < 10 &&
+          move[0] >= 0 &&
+          move[1] < 10 &&
+          move[1] >= 0 &&
+          !this.gameBoard.shotHistory.searchForCoordinates(move[0], move[1])
+      );
+      if (filteredMoves.length > 0) {
+        return filteredMoves[Math.floor(Math.random() * filteredMoves.length)];
+      } else {
+        let randomCoordinate = this.gameBoard.getRandomCoordinates();
+        while (
+          this.gameBoard.shotHistory.searchForCoordinates(
+            randomCoordinate[0],
+            randomCoordinate[1]
+          )
+        ) {
+          randomCoordinate = this.gameBoard.getRandomCoordinates();
+        }
+        return randomCoordinate;
+      }
+    }
   }
 }
 

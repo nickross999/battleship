@@ -128,9 +128,19 @@ class GameController {
         const cell = document.createElement("div");
         cell.classList.add("cell");
         cell.classList.add("blue");
-        if (this.players[index].gameBoard.boardMap[i][j] !== null) {
+        if (
+          index === this.currentPlayerIndex &&
+          this.players[index].gameBoard.boardMap[i][j] !== null
+        ) {
           cell.classList.remove("blue");
           cell.classList.add("ship");
+        }
+        if (this.players[index].gameBoard.coordinatesAreInMissedAttacks(j, i)) {
+          cell.classList.remove("blue");
+          cell.classList.add("miss");
+        } else if (this.players[index].gameBoard.coordinatesAreInHits(j, i)) {
+          cell.classList.remove("blue");
+          cell.classList.add("hit");
         }
         row.appendChild(cell);
       }
@@ -161,44 +171,6 @@ class GameController {
       playerScoreBoard.appendChild(shipDiv);
     });
     container.appendChild(playerScoreBoard);
-  }
-
-  buildEnemyBoard(index) {
-    const playerContainer = document.querySelector(`#player${index + 1}-board`);
-    const board = document.createElement("div");
-    board.classList.add("board");
-    playerContainer.appendChild(board);
-
-    for (let i = 0; i < 10; i++) {
-      const row = document.createElement("div");
-      row.classList.add("row");
-      board.appendChild(row);
-
-      for (let j = 0; j < 10; j++) {
-        const cell = document.createElement("div");
-        cell.classList.add("cell");
-        cell.classList.add("blue");
-        if (
-          this.players[
-            this.currentEnemyPlayerIndex
-          ].gameBoard.coordinatesAreInMissedAttacks(j, i)
-        ) {
-          cell.classList.remove("blue");
-          cell.classList.add("miss");
-        } else if (
-          this.players[
-            this.currentEnemyPlayerIndex
-          ].gameBoard.coordinatesAreInHits(j, i)
-        ) {
-          cell.classList.remove("blue");
-          cell.classList.add("hit");
-        }
-        row.appendChild(cell);
-      }
-    }
-
-    this.buildPlayerNameDisplay(index, playerContainer);
-    this.buildScoreBoard(index, playerContainer);
   }
 
   clearBoards() {
@@ -247,10 +219,23 @@ class GameController {
     return Math.floor(Math.random() * 2);
   }
 
+  validatePlayerName() {
+    const playerNameInput = document.querySelector("#name-input");
+    playerNameInput.setCustomValidity("");
+    if (playerNameInput.checkValidity) {
+      if (playerNameInput.value.length === 0) {
+        playerNameInput.setCustomValidity("Please input a name");
+        playerNameInput.reportValidity();
+      }
+    }
+  }
+
   getPlayer1Info() {
     const playerInfoDiv = document.querySelector("#player-info");
     playerInfoDiv.classList.toggle("hidden");
     const playerInfoForm = document.querySelector("#player-info-form");
+    const playerNameInput = document.querySelector("#name-input");
+    playerNameInput.setAttribute("required", "");
     playerInfoForm.addEventListener("submit", (e) => {
       e.preventDefault();
       this.players.push(new Player(e.target[0].value));
@@ -315,6 +300,7 @@ class GameController {
     const player2FormInput = document.createElement("input");
     player2FormInput.inputMode = "text";
     player2FormInput.id = "name-input";
+    player2FormInput.setAttribute("required", "");
 
     const player2FormSubmitButton = document.createElement("button");
     player2FormSubmitButton.textContent = "Play!";
@@ -355,24 +341,26 @@ class GameController {
       player1Cells[i].addEventListener("click", () => {
         if (this.players[0].gameBoard.checkIfAllShipsPlaced()) {
           this.clearBoards();
-          this.showTransitionalScreen(
-            () => {
-              if (this.players[1].isAI()) {
+          if (this.players[1].isAI()) {
+            this.showTransitionalScreen(
+              () => {
                 this.placeAIShips();
                 this.players[this.currentPlayerIndex].isAI()
                   ? this.takeAITurn()
                   : this.takeTurn();
-              } else {
+              },
+              `Let's start the game! ${this.players[1].playerName} goes first!`,
+              "Start"
+            );
+          } else {
+            this.showTransitionalScreen(
+              () => {
                 this.pickPlayer2Ships();
-              }
-            },
-            this.players[1].isAI()
-              ? `Let's start! ${
-                  this.players[this.currentPlayerIndex].playerName
-                } goes first!`
-              : `${this.players[1].playerName}, it's time to place your ships!`,
-            "Start"
-          );
+              },
+              `${this.players[1].playerName}, it's time to place your ships!`,
+              "Start"
+            );
+          }
         }
       });
     }
@@ -457,7 +445,7 @@ class GameController {
   takeTurn() {
     this.clearBoards();
     this.buildBoard(this.currentPlayerIndex);
-    this.buildEnemyBoard(this.currentEnemyPlayerIndex);
+    this.buildBoard(this.currentEnemyPlayerIndex);
     const enemyCells = document.querySelectorAll(
       `#player${this.currentEnemyPlayerIndex + 1}-board .cell`
     );
@@ -471,9 +459,13 @@ class GameController {
         ].gameBoard.coordinatesAreInHits(i % 10, Math.floor(i / 10))
       ) {
         enemyCells[i].addEventListener("click", () => {
-          this.players[this.currentEnemyPlayerIndex].gameBoard.receiveAttack(
+          const hitBool = this.players[
+            this.currentEnemyPlayerIndex
+          ].gameBoard.receiveAttack(i % 10, Math.floor(i / 10));
+          this.players[this.currentPlayerIndex].gameBoard.recordShotInHistory(
             i % 10,
-            Math.floor(i / 10)
+            Math.floor(i / 10),
+            hitBool
           );
           this.clearBoards();
           if (
@@ -486,19 +478,19 @@ class GameController {
             this.currentPlayerIndex = this.currentPlayerIndex === 0 ? 1 : 0;
             this.currentEnemyPlayerIndex =
               this.currentEnemyPlayerIndex === 0 ? 1 : 0;
-            this.showTransitionalScreen(
-              () => {
-                if (this.players[this.currentPlayerIndex].isAI()) {
-                  this.takeAITurn();
-                } else {
+            if (this.players[this.currentPlayerIndex].isAI()) {
+              this.takeAITurn();
+            } else {
+              this.showTransitionalScreen(
+                () => {
                   this.takeTurn();
-                }
-              },
-              `${
-                this.players[this.currentPlayerIndex].playerName
-              }, it's your turn!`,
-              "Start"
-            );
+                },
+                `${
+                  this.players[this.currentPlayerIndex].playerName
+                }, it's your turn!`,
+                "Take Turn"
+              );
+            }
           }
         });
       }
@@ -506,26 +498,19 @@ class GameController {
   }
 
   takeAITurn() {
-    if (
-      this.players[this.currentPlayerIndex].gameBoard.previousShot === null ||
-      this.players[this.currentPlayerIndex].gameBoard.previousShot.hit === false
-    ) {
-      let randomCoordinate = Math.floor(Math.random() * 100);
-      while (
-        this.players[this.currentEnemyPlayerIndex].gameBoard.boardMap[
-          Math.floor(randomCoordinate / 10)
-        ][randomCoordinate % 10] !== null
-      ) {
-        randomCoordinate = Math.floor(Math.random() * 100);
-      }
-      this.players[this.currentEnemyPlayerIndex].gameBoard.receiveAttack(
-        randomCoordinate % 10,
-        Math.floor(randomCoordinate / 10)
-      );
-      this.currentPlayerIndex = this.currentPlayerIndex === 0 ? 1 : 0;
-      this.currentEnemyPlayerIndex = this.currentEnemyPlayerIndex === 0 ? 1 : 0;
-      this.takeTurn();
-    }
+    const coordinate =
+      this.players[this.currentPlayerIndex].getAITurnDecision();
+    const hitBool = this.players[
+      this.currentEnemyPlayerIndex
+    ].gameBoard.receiveAttack(coordinate[0], coordinate[1]);
+    this.players[this.currentPlayerIndex].gameBoard.recordShotInHistory(
+      coordinate[0],
+      coordinate[1],
+      hitBool
+    );
+    this.currentPlayerIndex = this.currentPlayerIndex === 0 ? 1 : 0;
+    this.currentEnemyPlayerIndex = this.currentEnemyPlayerIndex === 0 ? 1 : 0;
+    this.takeTurn();
   }
 
   endGame(winnerIndex) {
