@@ -2,9 +2,15 @@
   "name": "battleship",
   "version": "1.0.0",
   "main": "index.js",
+  "homepage": "http://nickross999.github.io/battleship",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nickross999/battleship.git"
+  },
   "scripts": {
     "test": "jest",
-    "watch": "jest --watch *.js"
+    "watch": "jest --watch *.js",
+    "deploy": "gh-pages -d dist"
   },
   "author": "",
   "license": "ISC",
@@ -19,6 +25,7 @@
     "webpack-dev-server": "^5.2.0"
   },
   "devDependencies": {
+    "gh-pages": "^6.3.0",
     "webpack-cli": "^6.0.1"
   }
 }

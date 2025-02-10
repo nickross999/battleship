@@ -1,68 +1,179 @@
-#app-container {
-    display: flex;
-    justify-content: space-around;
+@font-face {
+  font-family: seaweed;
+  src: url(font/SeaweedScript-Regular.ttf);
 }
 
-#player-info {
-    width: 40vw;
-    height: 20vh;
-    border: 1px solid black;
-    position: absolute;
-    top: 10%;
+@font-face {
+  font-family: sailor;
+  src: url(font/SailorScrawlBlackRegular-mXBP.ttf);
 }
 
-.board {
-    border: 1px black solid;
-    border-radius: 10px;
-    background-color: rgb(212, 225, 230);
+:root {
+  --blue: #084575;
+  --brown: #e7d5a7;
+  --beige: #f3efd5;
+  --gray: #c0b2a4;
+  --black: #152642;
 }
 
-.hidden {
-    display: none;
+body {
+  background-color: var(--brown);
+  font-size: 32px;
 }
 
-.disabled {
-    cursor: not-allowed;
-    opacity: 0.2;
+h1 {
+  color: var(--blue);
+  font-family: "seaweed";
+  text-shadow: var(--black) 1px 1px 8px;
 }
 
-.row {
-    display: flex;
-    flex-direction: row;
+input {
+  background-color: var(--gray);
+  border: 1px solid var(--black);
 }
 
-.cell {
-    width: 50px;
-    height: 50px;
-    border: 1px dashed black;
-    border-radius: 10px;
+button {
+  background-color: var(--beige);
+  border: 1px solid var(--black);
+  box-shadow: 1px 1px var(--black);
+  border-radius: 10px;
+}
+
+button:active {
+  background-color: var(--gray);
 }
 
 .blue {
-    background-color: lightblue;
+  background-color: lightblue;
 }
 
 .green {
-    background-color: green;
+  background-color: green;
 }
 
 .red {
-    background-color: red;
-    cursor: not-allowed;
+  background-color: red;
+  cursor: not-allowed;
 }
 
 .ship {
-    background-color: lightgray;
+  background-color: lightgray;
 }
 
 .miss {
-    background-color: brown;
+  background-color: brown;
 }
 
 .hit {
-    background-color: blueviolet;
+  background-color: blueviolet;
 }
 
 .sunk {
-    text-decoration: line-through;
+  text-decoration: line-through;
+}
+
+#app-container {
+  display: flex;
+  justify-content: space-around;
+  flex-direction: column-reverse;
+  align-items: center;
+}
+
+#starting-screen {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 15%;
+  align-items: center;
+}
+
+#starting-screen h1 {
+  font-size: 96px;
+}
+
+#starting-screen button {
+  width: 125px;
+  height: 125px;
+  font-size: 80px;
+  color: var(--blue);
+}
+
+#player-info {
+  width: 40vw;
+  height: 20vh;
+  position: absolute;
+  top: 10%;
+  text-align: center;
+}
+
+#player-info h1 {
+  font-size: 30px;
+  font-family: "sailor";
+}
+
+#player-info button,
+.transition-message-box button {
+  height: 35px;
+  width: auto;
+  font-size: 18px;
+  font-family: "sailor";
+  margin: 5px;
+}
+
+#player-info-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+#name-input {
+  width: 70%;
+  height: 40px;
+  font-size: 30px;
+  text-align: center;
+}
+
+#player1-board,
+#player2-board {
+  width: fit-content;
+}
+
+.board {
+  border: 1px black solid;
+  border-radius: 10px;
+  background-color: rgb(212, 225, 230);
+  box-shadow: 1px 1px 2px var(--black);
+}
+
+.transition-message-box {
+  text-align: center;
+}
+
+.transition-message {
+  font-family: "sailor";
+}
+
+.hidden {
+  display: none !important;
+}
+
+.disabled {
+  cursor: not-allowed;
+  opacity: 0.2;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+}
+
+.cell {
+  width: 45px;
+  height: 45px;
+  border: 1px dashed black;
+  border-radius: 10px;
+}
+
+@media only screen and (min-width: 768px) {
 }

@@ -114,7 +114,9 @@ class GameController {
   }
 
   buildBoard(index) {
-    const playerContainer = document.querySelector(`#player${index + 1}-board`);
+    const appContainer = document.querySelector("#app-container");
+    const playerContainer = document.createElement("div");
+    playerContainer.id = `player${index + 1}-board`;
     const board = document.createElement("div");
     board.classList.add("board");
     playerContainer.appendChild(board);
@@ -146,6 +148,8 @@ class GameController {
       }
     }
 
+    appContainer.appendChild(playerContainer);
+
     this.buildPlayerNameDisplay(index, playerContainer);
     this.buildScoreBoard(index, playerContainer);
   }
@@ -175,9 +179,9 @@ class GameController {
 
   clearBoards() {
     for (let i = 0; i < 2; i++) {
-      let container = document.querySelector(`#player${i + 1}-board`);
-      while (container.firstChild) {
-        container.removeChild(container.firstChild);
+      const container = document.querySelector(`#player${i + 1}-board`);
+      if (container) {
+        container.parentNode.removeChild(container);
       }
     }
   }
@@ -458,6 +462,12 @@ class GameController {
           this.currentEnemyPlayerIndex
         ].gameBoard.coordinatesAreInHits(i % 10, Math.floor(i / 10))
       ) {
+        enemyCells[i].addEventListener("mouseover", () => {
+          enemyCells[i].classList.toggle("green");
+        });
+        enemyCells[i].addEventListener("mouseout", () => {
+          enemyCells[i].classList.toggle("green");
+        });
         enemyCells[i].addEventListener("click", () => {
           const hitBool = this.players[
             this.currentEnemyPlayerIndex
