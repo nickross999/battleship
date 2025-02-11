@@ -187,6 +187,21 @@ class GameController {
     }
   }
 
+  buildTurnHistory(index) {
+    const turnHistoryList = document.createElement("ul");
+    turnHistoryList.classList.add("turn-list");
+    turnHistoryList.textContent = "Last 10 Moves";
+    const turnHistoryArray = this.players[index].gameBoard.getTurnHistory();
+
+    for (let i = 0; i < turnHistoryArray.length; i++) {
+      const turn = document.createElement("li");
+      turn.textContent = turnHistoryArray[i].hitBool ? `${turnHistoryArray[i].move} - Hit!` : `${turnHistoryArray[i].move} - Miss!`;
+      turnHistoryList.appendChild(turn);
+    }
+
+    document.querySelector(`#player${index + 1}-board`).appendChild(turnHistoryList);
+  }
+
   showTransitionalScreen(callback, message, buttonText) {
     //a method to display a transitional screen between turns so that the players dont see eachothers boards
     //takes a callback for the button to execute on click, as well as a message to display to the player and the text for the button
@@ -354,7 +369,7 @@ class GameController {
                   ? this.takeAITurn()
                   : this.takeTurn();
               },
-              `Let's start the game! ${this.players[1].playerName} goes first!`,
+              `Let's start the game! ${this.players[this.currentPlayerIndex].playerName} goes first!`,
               "Start"
             );
           } else {
@@ -454,6 +469,8 @@ class GameController {
     this.clearBoards();
     this.buildBoard(this.currentPlayerIndex);
     this.buildBoard(this.currentEnemyPlayerIndex);
+    this.buildTurnHistory(this.currentPlayerIndex);
+    this.buildTurnHistory(this.currentEnemyPlayerIndex);
     const enemyCells = document.querySelectorAll(
       `#player${this.currentEnemyPlayerIndex + 1}-board .cell`
     );
@@ -522,9 +539,15 @@ class GameController {
       coordinate[1],
       hitBool
     );
-    this.currentPlayerIndex = this.currentPlayerIndex === 0 ? 1 : 0;
-    this.currentEnemyPlayerIndex = this.currentEnemyPlayerIndex === 0 ? 1 : 0;
-    this.takeTurn();
+    if (
+      this.players[this.currentEnemyPlayerIndex].gameBoard.checkIfAllShipsSunk()
+    ) {
+      this.endGame(this.currentPlayerIndex);
+    } else {
+      this.currentPlayerIndex = this.currentPlayerIndex === 0 ? 1 : 0;
+      this.currentEnemyPlayerIndex = this.currentEnemyPlayerIndex === 0 ? 1 : 0;
+      this.takeTurn();
+    }
   }
 
   endGame(winnerIndex) {

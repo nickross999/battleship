@@ -70,6 +70,7 @@ button:active {
 
 .sunk {
   text-decoration: line-through;
+  color: red;
 }
 
 #app-container {
@@ -137,7 +138,6 @@ button:active {
 #player1-board,
 #player2-board {
   border: 5px dotted var(--blue);
-  height: 95vh;
   max-width: 100vw;
   margin-bottom: 30px;
   padding: 15px;
@@ -175,8 +175,24 @@ button:active {
 
 #ship-list {
   list-style: none;
+  font-family: 'Courier New', Courier, monospace;
   grid-area: ships;
-  font-size: 22px;
+  font-size: 20px;
+}
+
+.turn-list {
+  display: none;
+  list-style: none;
+  font-family: 'Courier New', Courier, monospace;
+  color: var(--black)
+}
+
+.turn-list::first-line {
+  text-decoration: underline;
+}
+
+.turn-list li {
+  text-decoration: none;
 }
 
 .transition-message-box {
@@ -215,5 +231,32 @@ button:active {
   font-size: 15px;
 }
 
-@media only screen and (min-width: 768px) {
+#show-dialog-button {
+  margin: 5px;
+  height: 30px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+#winner-dialog {
+  background-color: var(--gray);
+}
+
+#winner-dialog button {
+  font-family: 'Courier New', Courier, monospace;
+  height: 40px;
+}
+
+@media only screen and (min-width: 1000px) {
+  #app-container {
+    flex-direction: row;
+  }
+
+  .cell {
+    height: 55px;
+    width: 55px;
+  }
+
+  .turn-list {
+    display: block;
+  }
 }

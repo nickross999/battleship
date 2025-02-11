@@ -170,6 +170,10 @@ class GameBoard {
     return false;
   }
 
+  getTurnHistory() {
+    return this.shotHistory.getList();
+  }
+
   getRandomCoordinates() {
     let randomCoordinate = Math.floor(Math.random() * 100);
     return [randomCoordinate % 10, Math.floor(randomCoordinate / 10)];

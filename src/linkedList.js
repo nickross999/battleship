@@ -47,14 +47,18 @@ class LinkedList {
     return null;
   }
 
-  printList() {
-    let currentNode = this.root;
-    let str = "";
-    while (currentNode) {
-        str += `${currentNode.coordinate}/${currentNode.hitBool} `;
-        currentNode = currentNode.next;
+  getList() {
+    const legend = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
+    let currentNode = this.tail;
+    let moveArray = [];
+    while (currentNode && moveArray.length < 10) {
+        moveArray.push({
+          move: `${legend[currentNode.coordinate[0]]}${Math.abs(10 - currentNode.coordinate[1])}`,
+          hitBool: currentNode.hitBool
+        });
+        currentNode = currentNode.prev;
     }
-    console.log(str);
+    return moveArray.reverse();
   }
 }
 
