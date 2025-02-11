@@ -151,7 +151,9 @@ class GameController {
     appContainer.appendChild(playerContainer);
 
     this.buildPlayerNameDisplay(index, playerContainer);
-    this.buildScoreBoard(index, playerContainer);
+    if (this.players[index].gameBoard.checkIfAllShipsPlaced()) {
+      this.buildScoreBoard(index, playerContainer);
+    }
   }
 
   buildPlayerNameDisplay(index, container) {
@@ -162,17 +164,16 @@ class GameController {
   }
 
   buildScoreBoard(index, container) {
-    const playerScoreBoard = document.createElement("div");
+    const playerScoreBoard = document.createElement("ul");
+    playerScoreBoard.id = "ship-list";
     this.players[index].gameBoard.ships.forEach((ship) => {
-      const shipDiv = document.createElement("div");
-      shipDiv.id = ship.name.toLowerCase();
+      const shipListItem = document.createElement("li");
+      shipListItem.id = ship.name.toLowerCase();
       if (ship.checkIfSunk()) {
-        shipDiv.classList.add("sunk");
+        shipListItem.classList.add("sunk");
       }
-      const shipName = document.createElement("h2");
-      shipName.textContent = ship.name;
-      shipDiv.appendChild(shipName);
-      playerScoreBoard.appendChild(shipDiv);
+      shipListItem.textContent = ship.name;
+      playerScoreBoard.appendChild(shipListItem);
     });
     container.appendChild(playerScoreBoard);
   }
@@ -370,6 +371,7 @@ class GameController {
     }
 
     const changeShipOrientationButton = document.createElement("button");
+    changeShipOrientationButton.id = "change-ship-orientation-btn";
     changeShipOrientationButton.textContent = "Change ship direction";
     changeShipOrientationButton.onclick = () => {
       this.players[0].gameBoard.changeNextShipDirection();
@@ -439,6 +441,8 @@ class GameController {
     }
 
     const changeShipOrientationButton = document.createElement("button");
+    changeShipOrientationButton.id = "change-ship-orientation-btn";
+
     changeShipOrientationButton.textContent = "Change ship direction";
     changeShipOrientationButton.onclick = () => {
       this.players[1].gameBoard.changeNextShipDirection();
